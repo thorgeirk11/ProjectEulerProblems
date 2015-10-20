@@ -16,6 +16,11 @@ namespace Problem15_LatticePaths
 
             public int col;
             public int row;
+
+            public override string ToString()
+            {
+                return "(" + row + "," + col + ")";
+            }
         }
 
         static void Main(string[] args)
@@ -30,24 +35,24 @@ namespace Problem15_LatticePaths
             Console.Read();
         }
 
-        static Dictionary<Cell, int> CachedCells = new Dictionary<Cell, int>();
+        static Dictionary<Cell, long> CachedCells = new Dictionary<Cell, long>();
 
-        static int Grid(int gridSize, Cell cell)
+        static long Grid(int gridSize, Cell cell)
         {
             if (CachedCells.ContainsKey(cell))
                 return CachedCells[cell];
 
-            if (cell.row == gridSize && cell.col == gridSize) return 0;
+            if (cell.row == gridSize && cell.col == gridSize) return 1;
 
-            var rightValue = 0;
-            var downValue = 0;
+            long rightValue = 0;
+            long downValue = 0;
             if (cell.row < gridSize)
             {
-                downValue = 1 + Grid(gridSize, new Cell(cell.row + 1, cell.col));
+                downValue = Grid(gridSize, new Cell(cell.row + 1, cell.col));
             }
             if (cell.col < gridSize)
             {
-                rightValue = 1 + Grid(gridSize, new Cell(cell.row, cell.col + 1));
+                rightValue = Grid(gridSize, new Cell(cell.row, cell.col + 1));
             }
 
             return CachedCells[cell] = rightValue + downValue;
