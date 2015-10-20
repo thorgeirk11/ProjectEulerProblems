@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Problem15_LatticePaths
 {
@@ -23,16 +24,18 @@ namespace Problem15_LatticePaths
             // there are exactly 6 routes to the bottom right corner.
             //How many such routes are there through a 20×20 grid ?
 
+            var st = Stopwatch.StartNew();
             Console.WriteLine(Grid(20, new Cell { row = 0, col = 0 }));
+            Console.WriteLine(st.ElapsedMilliseconds);
             Console.Read();
         }
 
-        static Dictionary<Cell, int> chache = new Dictionary<Cell, int>();
+        static Dictionary<Cell, int> CachedCells = new Dictionary<Cell, int>();
 
         static int Grid(int gridSize, Cell cell)
         {
-            if (chache.ContainsKey(cell))
-                return chache[cell];
+            if (CachedCells.ContainsKey(cell))
+                return CachedCells[cell];
 
             if (cell.row == gridSize && cell.col == gridSize) return 0;
 
@@ -47,7 +50,7 @@ namespace Problem15_LatticePaths
                 rightValue = 1 + Grid(gridSize, new Cell(cell.row, cell.col + 1));
             }
 
-            return chache[cell] = rightValue + downValue;
+            return CachedCells[cell] = rightValue + downValue;
         }
     }
 }
