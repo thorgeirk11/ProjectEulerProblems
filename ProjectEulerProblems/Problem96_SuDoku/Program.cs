@@ -37,7 +37,7 @@ namespace Problem96_SuDoku
             Nine
         };
 
-        public static int TheSum = 0;
+        public static int TheSum;
 
         public static Possible[,] TheSolution { get; private set; }
 
@@ -118,7 +118,6 @@ namespace Problem96_SuDoku
             Console.Read();
         }
 
-
         public static Possible[,] InizialzeRoot()
         {
             var root = new Possible[9, 9];
@@ -174,7 +173,6 @@ namespace Problem96_SuDoku
             return sb.ToString();
         }
 
-
         public static void FindIndexOfFirstFlaged(Possible[,] root, out int row, out int col)
         {
             row = -1;
@@ -219,7 +217,6 @@ namespace Problem96_SuDoku
 
                 var hasError = DFS_Checker(tempBoard, tempRoot);
 
-                newBoard[row, col] = 0;
                 if (hasError)
                 {
                     newRoot[row, col] &= ~number;
@@ -269,8 +266,7 @@ namespace Problem96_SuDoku
             var changed = false;
             do
             {
-                changed = SimpleMethod(board, posArray);
-                if (!changed) return;
+                SimpleMethod(board, posArray);
                 changed = AdvancedMethod(board, posArray);
             } while (changed);
         }
@@ -287,11 +283,12 @@ namespace Problem96_SuDoku
                     for (int col = 0; col < 9; col++)
                     {
                         var possible = CheckCellWithPos(posArray, row, col);
-                        posArray[row, col] = possible;
 
                         if (possible == 0)
+                        {
+                            posArray[row, col] = 0;
                             return false;
-
+                        }
                         if (board[row, col] == 0 && OnlyOnePosiblity(possible))
                         {
                             board[row, col] = GetNumber(possible);
@@ -399,7 +396,7 @@ namespace Problem96_SuDoku
 
         public static IEnumerable<Possible> GetPosabilities(Possible input)
         {
-            foreach (Possible value in posIndexer)
+            foreach (var value in posIndexer)
                 if (input.HasFlag(value))
                     yield return value;
         }
