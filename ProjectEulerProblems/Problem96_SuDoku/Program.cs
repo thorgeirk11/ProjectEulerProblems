@@ -62,52 +62,13 @@ namespace Problem96_SuDoku
                     continue;
                 }
 
-                try
-                {
-                    int row, col;
-                    FindIndexOfFirstFlaged(root, out row, out col);
-                    foreach (var number in GetPosabilities(root[row, col]).ToList())
-                    {
-                        board[row, col] = GetNumber(number);
+                var solution = DFS(board, root);
 
-                        var newBoard = new int[9, 9];
-                        var newRoot = new Possible[9, 9];
-                        Array.Copy(board, newBoard, 9 * 9);
-                        Array.Copy(root, newRoot, 9 * 9);
+                TheSum += solution[0, 0] * 100 + solution[0, 1] * 10 + solution[0, 2];
 
-                        var hasError = DFS_Checker(newBoard, newRoot);
-                        if (hasError)
-                        {
-                            root[row, col] &= ~number;
-                        }
-                        else
-                        {
-
-                        }
-                        if (IsCorrect(newRoot))
-                        {
-                            TheSum += board[0, 0] * 100 + board[0, 1] * 10 + board[0, 2];
-                            Console.WriteLine("Board " + counter + " " + TheSum);
-                            Console.WriteLine(Print(newRoot));
-                            Console.WriteLine();
-                            counter++;
-                            break;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    TheSum += GetNumber(TheSolution[0, 0]) * 100 +
-                        GetNumber(TheSolution[0, 1]) * 10 +
-                        GetNumber(TheSolution[0, 2]);
-                    Console.WriteLine("Board " + counter + " " + TheSum);
-                    Console.WriteLine(Print(TheSolution));
-                    Console.WriteLine();
-                    counter++;
-                    continue;
-                }
-
-                //Console.WriteLine("Boar" + counter + " Missing");
+                Console.WriteLine("Board " + counter + " " + TheSum);
+                Console.WriteLine(Print(solution));
+                Console.WriteLine();
                 counter++;
 
             }
@@ -116,6 +77,28 @@ namespace Problem96_SuDoku
             Console.WriteLine(time.ElapsedMilliseconds);
             Console.WriteLine(TheSum);
             Console.Read();
+        }
+
+        private static int[,] DFS(int[,] board, Possible[,] root)
+        {
+            int row, col;
+            FindIndexOfFirstFlaged(root, out row, out col);
+            foreach (var number in GetPosabilities(root[row, col]).ToList())
+            {
+                board[row, col] = GetNumber(number);
+
+                var newBoard = new int[9, 9];
+                var newRoot = new Possible[9, 9];
+                Array.Copy(board, newBoard, 9 * 9);
+                Array.Copy(root, newRoot, 9 * 9);
+                var solution = DFS_Checker(newBoard, newRoot);
+                if (solution != null)
+                {
+                    return solution;
+                }
+                root[row, col] &= ~number;
+            }
+            return null;
         }
 
         public static Possible[,] InizialzeRoot()
@@ -199,51 +182,44 @@ namespace Problem96_SuDoku
             }
         }
 
-        private static bool DFS_Search(int[,] board, Possible[,] root, int row, int col)
+        private static int[,] DFS_Search(int[,] board, Possible[,] root, int row, int col)
         {
-            var newBoard = new int[9, 9];
-            var newRoot = new Possible[9, 9];
-            Array.Copy(board, newBoard, 9 * 9);
-            Array.Copy(root, newRoot, 9 * 9);
-
             foreach (var number in GetPosabilities(root[row, col]).ToList())
             {
-                newBoard[row, col] = GetNumber(number);
+                board[row, col] = GetNumber(number);
 
-                var tempBoard = new int[9, 9];
-                var tempRoot = new Possible[9, 9];
-                Array.Copy(newBoard, tempBoard, 9 * 9);
-                Array.Copy(newRoot, tempRoot, 9 * 9);
+                var solution = DFS_Checker(board, root);
+                if (solution != null) return solution;
 
-                var hasError = DFS_Checker(tempBoard, tempRoot);
-
-                if (hasError)
-                {
-                    newRoot[row, col] &= ~number;
-                }
+                board[row, col] = 0;
+                root[row, col] &= ~number;
             }
-            return true; // None of the guesses were correct.
+            return null; // None of the guesses were correct.
         }
 
-        static bool DFS_Checker(int[,] board, Possible[,] root)
+        static int[,] DFS_Checker(int[,] board, Possible[,] root)
         {
-            RunBothSimpleAndAdvance(board, root);
+            var tempBoard = new int[9, 9];
+            var tempRoot = new Possible[9, 9];
+            Array.Copy(board, tempBoard, 9 * 9);
+            Array.Copy(root, tempRoot, 9 * 9);
+
+            RunBothSimpleAndAdvance(tempBoard, tempRoot);
 
             var correct = false;
-            var error = HasError(root, out correct);
+            var error = HasError(tempRoot, out correct);
             if (error)
             {
-                return true;
+                return null;
             }
             if (correct)
             {
-                TheSolution = root;
-                throw new Exception("Job Done!");
+                return tempBoard;
             }
             int row, col;
-            FindIndexOfFirstFlaged(root, out row, out col);
+            FindIndexOfFirstFlaged(tempRoot, out row, out col);
 
-            return DFS_Search(board, root, row, col);
+            return DFS_Search(tempBoard, tempRoot, row, col);
         }
 
         public static bool HasError(Possible[,] arr, out bool IsCorrect)
