@@ -22,19 +22,19 @@ namespace Problem96_SuDoku
         Nine = 1 << 9,
         All = One | Two | Three | Four | Five | Six | Seven | Eight | Nine
     }
-    public class Program
+    public class SudokuSolver
     {
-        public static List<Possible> posIndexer = new List<Possible>
+        public static Dictionary<Possible, int> posabilities = new Dictionary<Possible, int>
         {
-            One,
-            Two ,
-            Three ,
-            Four ,
-            Five ,
-            Six ,
-            Seven ,
-            Eight ,
-            Nine
+            {One   , 1 },
+            {Two   , 2 },
+            {Three , 3 },
+            {Four  , 4 },
+            {Five  , 5 },
+            {Six   , 6 },
+            {Seven , 7 },
+            {Eight , 8 },
+            {Nine  , 9 },
         };
 
         public static int TheSum;
@@ -46,37 +46,37 @@ namespace Problem96_SuDoku
             var boards = ReadBoards(args[0]);
 
             var time = Stopwatch.StartNew();
-            int counter = 1;
+            //int counter = 1;
+            //for (int i = 0; i < 10000; i++)
+            //{
+            TheSum = 0;
             foreach (var board in boards)
             {
                 var root = InizialzeRoot();
                 RunBothSimpleAndAdvance(board, root);
 
+                int[,] solution;
                 if (IsCorrect(root))
                 {
-                    TheSum += board[0, 0] * 100 + board[0, 1] * 10 + board[0, 2];
-                    Console.WriteLine("Board " + counter + " " + TheSum);
-                    Console.WriteLine(Print(board));
-                    Console.WriteLine();
-                    counter++;
-                    continue;
+                    solution = board;
                 }
-
-                var solution = DFS(board, root);
+                else
+                {
+                    solution = DFS(board, root);
+                }
 
                 TheSum += solution[0, 0] * 100 + solution[0, 1] * 10 + solution[0, 2];
 
-                Console.WriteLine("Board " + counter + " " + TheSum);
-                Console.WriteLine(Print(solution));
-                Console.WriteLine();
-                counter++;
+                //Console.WriteLine("Board " + counter + " " + TheSum);
+                //Console.WriteLine(Print(solution));
+                //Console.WriteLine();
+                //counter++;
 
+                //}
             }
-
-
             Console.WriteLine(time.ElapsedMilliseconds);
             Console.WriteLine(TheSum);
-            Console.Read();
+            Console.ReadLine();
         }
 
         private static int[,] DFS(int[,] board, Possible[,] root)
@@ -113,47 +113,6 @@ namespace Problem96_SuDoku
             }
 
             return root;
-        }
-
-        public static string Print(Possible[,] root)
-        {
-            var sb = new StringBuilder();
-            for (int row = 0; row < 9; row++)
-            {
-                for (int col = 0; col < 9; col++)
-                {
-                    if (col % 3 == 0)
-                        sb.Append(" ");
-                    sb.Append(GetNumber(root[row, col]));
-                }
-                if ((row + 1) % 3 == 0)
-                    sb.AppendLine();
-                sb.AppendLine();
-            }
-            return sb.ToString();
-        }
-
-        private static int GetNumber(Possible pos)
-        {
-            return posIndexer.IndexOf(pos) + 1;
-        }
-
-        public static string Print(int[,] board)
-        {
-            var sb = new StringBuilder();
-            for (int row = 0; row < 9; row++)
-            {
-                for (int col = 0; col < 9; col++)
-                {
-                    if (col % 3 == 0)
-                        sb.Append(" ");
-                    sb.Append(board[row, col]);
-                }
-                if ((row + 1) % 3 == 0)
-                    sb.AppendLine();
-                sb.AppendLine();
-            }
-            return sb.ToString();
         }
 
         public static void FindIndexOfFirstFlaged(Possible[,] root, out int row, out int col)
@@ -370,13 +329,6 @@ namespace Problem96_SuDoku
             return (possible & (possible - 1)) == 0;
         }
 
-        public static IEnumerable<Possible> GetPosabilities(Possible input)
-        {
-            foreach (var value in posIndexer)
-                if (input.HasFlag(value))
-                    yield return value;
-        }
-
         public static Possible CheckCell(int[,] board, int row, int col)
         {
             if (board[row, col] != 0) return (Possible)(1 << board[row, col]);
@@ -435,6 +387,35 @@ namespace Problem96_SuDoku
                 }
             }
             return boards;
+        }
+
+        public static IEnumerable<Possible> GetPosabilities(Possible input)
+        {
+            foreach (var value in posabilities.Keys)
+                if (input.HasFlag(value))
+                    yield return value;
+        }
+
+        private static int GetNumber(Possible pos)
+        {
+            return posabilities[pos];
+        }
+        public static string Print(int[,] board)
+        {
+            var sb = new StringBuilder();
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    if (col % 3 == 0)
+                        sb.Append(" ");
+                    sb.Append(board[row, col]);
+                }
+                if ((row + 1) % 3 == 0)
+                    sb.AppendLine();
+                sb.AppendLine();
+            }
+            return sb.ToString();
         }
     }
 }
