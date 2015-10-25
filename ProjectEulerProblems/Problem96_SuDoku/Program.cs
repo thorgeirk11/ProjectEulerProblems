@@ -79,28 +79,6 @@ namespace Problem96_SuDoku
             Console.ReadLine();
         }
 
-        private static int[,] DFS(int[,] board, Possible[,] root)
-        {
-            int row, col;
-            FindIndexOfFirstFlaged(root, out row, out col);
-            foreach (var number in GetPosabilities(root[row, col]).ToList())
-            {
-                board[row, col] = GetNumber(number);
-
-                var newBoard = new int[9, 9];
-                var newRoot = new Possible[9, 9];
-                Array.Copy(board, newBoard, 9 * 9);
-                Array.Copy(root, newRoot, 9 * 9);
-                var solution = DFS_Checker(newBoard, newRoot);
-                if (solution != null)
-                {
-                    return solution;
-                }
-                root[row, col] &= ~number;
-            }
-            return null;
-        }
-
         public static Possible[,] InizialzeRoot()
         {
             var root = new Possible[9, 9];
@@ -119,9 +97,7 @@ namespace Problem96_SuDoku
         {
             row = -1;
             col = -1;
-
             var lowestNumber = int.MaxValue;
-
             for (int iRow = 0; iRow < 9; iRow++)
             {
                 for (int iCol = 0; iCol < 9; iCol++)
@@ -141,44 +117,39 @@ namespace Problem96_SuDoku
             }
         }
 
-        private static int[,] DFS_Search(int[,] board, Possible[,] root, int row, int col)
+        static int[,] DFS(int[,] board, Possible[,] root)
         {
+            int row, col;
+            FindIndexOfFirstFlaged(root, out row, out col);
             foreach (var number in GetPosabilities(root[row, col]).ToList())
             {
                 board[row, col] = GetNumber(number);
 
-                var solution = DFS_Checker(board, root);
+                var tempBoard = new int[9, 9];
+                var tempRoot = new Possible[9, 9];
+                Array.Copy(board, tempBoard, 9 * 9);
+                Array.Copy(root, tempRoot, 9 * 9);
+
+                RunBothSimpleAndAdvance(tempBoard, tempRoot);
+
+                var correct = false;
+                var error = HasError(tempRoot, out correct);
+                if (error)
+                {
+                    root[row, col] &= ~number;
+                    continue;
+                }
+                if (correct)
+                {
+                    return tempBoard;
+                }
+
+                var solution = DFS(tempBoard, tempRoot);
                 if (solution != null) return solution;
 
-                board[row, col] = 0;
                 root[row, col] &= ~number;
             }
             return null; // None of the guesses were correct.
-        }
-
-        static int[,] DFS_Checker(int[,] board, Possible[,] root)
-        {
-            var tempBoard = new int[9, 9];
-            var tempRoot = new Possible[9, 9];
-            Array.Copy(board, tempBoard, 9 * 9);
-            Array.Copy(root, tempRoot, 9 * 9);
-
-            RunBothSimpleAndAdvance(tempBoard, tempRoot);
-
-            var correct = false;
-            var error = HasError(tempRoot, out correct);
-            if (error)
-            {
-                return null;
-            }
-            if (correct)
-            {
-                return tempBoard;
-            }
-            int row, col;
-            FindIndexOfFirstFlaged(tempRoot, out row, out col);
-
-            return DFS_Search(tempBoard, tempRoot, row, col);
         }
 
         public static bool HasError(Possible[,] arr, out bool IsCorrect)
