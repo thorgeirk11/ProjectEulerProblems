@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using static Problem96_SuDoku.Possible;
 
 namespace Problem96_SuDoku
@@ -35,19 +36,7 @@ namespace Problem96_SuDoku
             TheSum = 0;
             foreach (var board in boards)
             {
-                var root = InizialzeRoot();
-                FillOut(board, root);
-
-                int[,] solution;
-                if (IsCorrect(root))
-                {
-                    solution = board;
-                }
-                else
-                {
-                    solution = DFS(board, root);
-                }
-
+                var solution = SolveSudoku(board);
                 TheSum += solution[0, 0] * 100 + solution[0, 1] * 10 + solution[0, 2];
             }
             Console.WriteLine(time.ElapsedMilliseconds);
@@ -55,6 +44,23 @@ namespace Problem96_SuDoku
             Console.ReadLine();
         }
 
+        public static int[,] SolveSudoku(int[,] board)
+        {
+            var root = InizialzeRoot();
+            FillOut(board, root);
+
+            int[,] solution;
+            if (IsCorrect(root))
+            {
+                solution = board;
+            }
+            else
+            {
+                solution = DFS(board, root);
+            }
+
+            return solution;
+        }
 
         public static Possible[,] InizialzeRoot()
         {
@@ -106,7 +112,6 @@ namespace Problem96_SuDoku
                 Array.Copy(root, tempRoot, 9 * 9);
 
                 tempBoard[row, col] = CellValue(number);
-
                 FillOut(tempBoard, tempRoot);
 
                 var correct = false;
@@ -143,7 +148,6 @@ namespace Problem96_SuDoku
             }
             return false;
         }
-
         public static void FillOut(int[,] board, Possible[,] root)
         {
             do
@@ -184,13 +188,11 @@ namespace Problem96_SuDoku
             } while (changed);
             return anyChangeAtAll;
         }
-
         public static bool IsCorrect(Possible[,] posArray)
         {
             var isCorrect = false;
             return !HasError(posArray, out isCorrect) && isCorrect;
         }
-
         public static Possible CheckCellWithPos(Possible[,] root, int row, int col)
         {
             var possible = root[row, col];
@@ -233,12 +235,7 @@ namespace Problem96_SuDoku
                 for (int iRow = boxRow; iRow < boxRow + 3; iRow++)
                 {
                     if (iCol == col && iRow == row) continue;
-
-                    var value = root[iRow, iCol];
-                    if (value.HasFlag(number))
-                    {
-                        return false;
-                    }
+                    if (root[iRow, iCol].HasFlag(number)) return false;
                 }
             }
             return true;
@@ -256,11 +253,11 @@ namespace Problem96_SuDoku
                 possible &= (Possible)~(1 << board[row, i]);
                 possible &= (Possible)~(1 << board[i, col]);
             }
-            var boxRow = row / 3;
-            var boxCol = col / 3;
-            for (int iCol = boxCol * 3; iCol < boxCol * 3 + 3; iCol++)
+            var boxRow = (row / 3) * 3;
+            var boxCol = (col / 3) * 3;
+            for (int iCol = boxCol; iCol < boxCol + 3; iCol++)
             {
-                for (int iRow = boxRow * 3; iRow < boxRow * 3 + 3; iRow++)
+                for (int iRow = boxRow; iRow < boxRow + 3; iRow++)
                 {
                     possible &= (Possible)~(1 << board[iRow, iCol]);
                 }
