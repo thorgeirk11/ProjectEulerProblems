@@ -27,15 +27,7 @@
             for (int i = 0; i < 1000; i++)
             {
                 var x = (int[,])board.Clone();
-                SudokuSolver.RunBothSimpleAndAdvance(x, SudokuSolver.InizialzeRoot());
-            }
-        }
-        [Test]
-        public void GetPosabilitiesTest()
-        {
-            for (int i = 0; i < 10000000; i++)
-            {
-                SudokuSolver.GetPosabilities(Possible.All);
+                SudokuSolver.FillOut(x, SudokuSolver.InizialzeRoot());
             }
         }
     }

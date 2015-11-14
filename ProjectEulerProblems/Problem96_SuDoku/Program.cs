@@ -24,36 +24,19 @@ namespace Problem96_SuDoku
     }
     public class SudokuSolver
     {
-        public static Dictionary<Possible, int> posabilities = new Dictionary<Possible, int>
-        {
-            {One   , 1 },
-            {Two   , 2 },
-            {Three , 3 },
-            {Four  , 4 },
-            {Five  , 5 },
-            {Six   , 6 },
-            {Seven , 7 },
-            {Eight , 8 },
-            {Nine  , 9 },
-        };
-
+        public static Possible[] posabilities = new[] { One, Two, Three, Four, Five, Six, Seven, Eight, Nine };
         public static int TheSum;
-
-        public static Possible[,] TheSolution { get; private set; }
 
         public static void Main(string[] args)
         {
             var boards = ReadBoards(args[0]);
 
             var time = Stopwatch.StartNew();
-            //int counter = 1;
-            //for (int i = 0; i < 10000; i++)
-            //{
             TheSum = 0;
             foreach (var board in boards)
             {
                 var root = InizialzeRoot();
-                RunBothSimpleAndAdvance(board, root);
+                FillOut(board, root);
 
                 int[,] solution;
                 if (IsCorrect(root))
@@ -66,18 +49,12 @@ namespace Problem96_SuDoku
                 }
 
                 TheSum += solution[0, 0] * 100 + solution[0, 1] * 10 + solution[0, 2];
-
-                //Console.WriteLine("Board " + counter + " " + TheSum);
-                //Console.WriteLine(Print(solution));
-                //Console.WriteLine();
-                //counter++;
-
-                //}
             }
             Console.WriteLine(time.ElapsedMilliseconds);
             Console.WriteLine(TheSum);
             Console.ReadLine();
         }
+
 
         public static Possible[,] InizialzeRoot()
         {
@@ -89,11 +66,10 @@ namespace Problem96_SuDoku
                     root[row, col] = All;
                 }
             }
-
             return root;
         }
 
-        public static void FindIndexOfFirstFlaged(Possible[,] root, out int row, out int col)
+        public static void CellIndexWithFewestFlags(Possible[,] root, out int row, out int col)
         {
             row = -1;
             col = -1;
@@ -102,15 +78,16 @@ namespace Problem96_SuDoku
             {
                 for (int iCol = 0; iCol < 9; iCol++)
                 {
-                    if (!OnlyOnePosiblity(root[iRow, iCol]))
+                    var cell = root[iRow, iCol];
+                    if (!OnlyOnePosiblity(cell))
                     {
-                        var count = GetPosabilities(root[iRow, iCol]).Count();
+                        var numberOfPosibiltiesInCell = GetFlags(cell).Length;
 
-                        if (lowestNumber > count)
+                        if (lowestNumber > numberOfPosibiltiesInCell)
                         {
                             row = iRow;
                             col = iCol;
-                            lowestNumber = count;
+                            lowestNumber = numberOfPosibiltiesInCell;
                         }
                     }
                 }
@@ -120,17 +97,17 @@ namespace Problem96_SuDoku
         static int[,] DFS(int[,] board, Possible[,] root)
         {
             int row, col;
-            FindIndexOfFirstFlaged(root, out row, out col);
-            foreach (var number in GetPosabilities(root[row, col]).ToList())
+            CellIndexWithFewestFlags(root, out row, out col);
+            foreach (var number in GetFlags(root[row, col]))
             {
-                board[row, col] = GetNumber(number);
-
                 var tempBoard = new int[9, 9];
                 var tempRoot = new Possible[9, 9];
                 Array.Copy(board, tempBoard, 9 * 9);
                 Array.Copy(root, tempRoot, 9 * 9);
 
-                RunBothSimpleAndAdvance(tempBoard, tempRoot);
+                tempBoard[row, col] = CellValue(number);
+
+                FillOut(tempBoard, tempRoot);
 
                 var correct = false;
                 var error = HasError(tempRoot, out correct);
@@ -167,17 +144,15 @@ namespace Problem96_SuDoku
             return false;
         }
 
-        public static void RunBothSimpleAndAdvance(int[,] board, Possible[,] posArray)
+        public static void FillOut(int[,] board, Possible[,] root)
         {
-            var changed = false;
             do
             {
-                SimpleMethod(board, posArray);
-                changed = AdvancedMethod(board, posArray);
-            } while (changed);
+                FillOut(board, root, true);
+            }
+            while (FillOut(board, root, false));
         }
-
-        private static bool AdvancedMethod(int[,] board, Possible[,] posArray)
+        private static bool FillOut(int[,] board, Possible[,] posArray, bool useSimpleMethod)
         {
             var anyChangeAtAll = false;
             var changed = false;
@@ -188,45 +163,19 @@ namespace Problem96_SuDoku
                 {
                     for (int col = 0; col < 9; col++)
                     {
-                        var possible = CheckCellWithPos(posArray, row, col);
-
-                        if (possible == 0)
+                        Possible possible;
+                        if (useSimpleMethod)
                         {
-                            posArray[row, col] = 0;
-                            return false;
+                            possible = posArray[row, col] = CheckCell(board, row, col);
                         }
+                        else
+                        {
+                            possible = CheckCellWithPos(posArray, row, col);
+                        }
+                        if (possible == 0) return false;
                         if (board[row, col] == 0 && OnlyOnePosiblity(possible))
                         {
-                            board[row, col] = GetNumber(possible);
-                            changed = true;
-                            anyChangeAtAll = true;
-                        }
-                    }
-                }
-            } while (changed);
-            return anyChangeAtAll;
-        }
-
-        private static bool SimpleMethod(int[,] board, Possible[,] posArray)
-        {
-            var anyChangeAtAll = false;
-            var changed = false;
-            do
-            {
-                changed = false;
-                for (int row = 0; row < 9; row++)
-                {
-                    for (int col = 0; col < 9; col++)
-                    {
-                        var possible = CheckCell(board, row, col);
-                        posArray[row, col] = possible;
-
-                        if (possible == 0)
-                            return false;
-
-                        if (board[row, col] == 0 && OnlyOnePosiblity(possible))
-                        {
-                            board[row, col] = GetNumber(possible);
+                            board[row, col] = CellValue(possible);
                             changed = true;
                             anyChangeAtAll = true;
                         }
@@ -246,7 +195,7 @@ namespace Problem96_SuDoku
         {
             var possible = root[row, col];
             if (OnlyOnePosiblity(possible)) return possible;
-            foreach (var number in GetPosabilities(possible))
+            foreach (var number in GetFlags(possible))
             {
                 var onlyInRow = true;
                 var onlyInCol = true;
@@ -277,11 +226,11 @@ namespace Problem96_SuDoku
 
         private static bool OnlyInBox(Possible[,] root, int row, int col, Possible number)
         {
-            var boxRow = row / 3;
-            var boxCol = col / 3;
-            for (int iCol = boxCol * 3; iCol < boxCol * 3 + 3; iCol++)
+            var boxRow = (row / 3) * 3;
+            var boxCol = (col / 3) * 3;
+            for (int iCol = boxCol; iCol < boxCol + 3; iCol++)
             {
-                for (int iRow = boxRow * 3; iRow < boxRow * 3 + 3; iRow++)
+                for (int iRow = boxRow; iRow < boxRow + 3; iRow++)
                 {
                     if (iCol == col && iRow == row) continue;
 
@@ -295,30 +244,17 @@ namespace Problem96_SuDoku
             return true;
         }
 
-        public static bool OnlyOnePosiblity(Possible possible)
-        {
-            return (possible & (possible - 1)) == 0;
-        }
+        public static bool OnlyOnePosiblity(Possible possible) => (possible & (possible - 1)) == 0;
 
         public static Possible CheckCell(int[,] board, int row, int col)
         {
             if (board[row, col] != 0) return (Possible)(1 << board[row, col]);
 
             var possible = All;
-
             for (int i = 0; i < 9; i++)
             {
-                if (board[row, i] != 0)
-                {
-                    var mask = ~(1 << board[row, i]);
-                    possible &= (Possible)mask;
-                }
-                if (board[i, col] != 0)
-                {
-                    var val = board[i, col];
-                    var mask = ~(1 << val);
-                    possible &= (Possible)mask;
-                }
+                possible &= (Possible)~(1 << board[row, i]);
+                possible &= (Possible)~(1 << board[i, col]);
             }
             var boxRow = row / 3;
             var boxCol = col / 3;
@@ -326,12 +262,7 @@ namespace Problem96_SuDoku
             {
                 for (int iRow = boxRow * 3; iRow < boxRow * 3 + 3; iRow++)
                 {
-                    if (board[iRow, iCol] != 0)
-                    {
-                        var value = board[iRow, iCol];
-                        var mask = ~(1 << value);
-                        possible &= (Possible)mask;
-                    }
+                    possible &= (Possible)~(1 << board[iRow, iCol]);
                 }
             }
             return possible;
@@ -360,17 +291,11 @@ namespace Problem96_SuDoku
             return boards;
         }
 
-        public static IEnumerable<Possible> GetPosabilities(Possible input)
-        {
-            foreach (var value in posabilities.Keys)
-                if (input.HasFlag(value))
-                    yield return value;
-        }
+        public static Possible[] GetFlags(Possible input) => (from value in posabilities
+                                                              where input.HasFlag(value)
+                                                              select value).ToArray();
 
-        private static int GetNumber(Possible pos)
-        {
-            return posabilities[pos];
-        }
+        private static int CellValue(Possible pos) => Array.IndexOf(posabilities, pos) + 1;
         public static string Print(int[,] board)
         {
             var sb = new StringBuilder();
