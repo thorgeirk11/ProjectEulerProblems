@@ -28,18 +28,14 @@ namespace P96.SuDoku
         {
             var root = InizialzeRoot();
             FillOut(board, root);
-
-            int[,] solution;
             if (IsCorrect(root))
             {
-                solution = board;
+                return board;
             }
             else
             {
-                solution = DFS(board, root);
+                return DFS(board, root);
             }
-
-            return solution;
         }
 
         public static Possible[,] InizialzeRoot()
