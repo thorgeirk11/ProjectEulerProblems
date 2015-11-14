@@ -19,7 +19,7 @@ namespace P96.SuDoku
         Nine = 1 << 9,
         All = One | Two | Three | Four | Five | Six | Seven | Eight | Nine
     }
-    public static class P96SudokuSolver
+    public static class SudokuSolver
     {
         public static Possible[] posabilities = new[] { One, Two, Three, Four, Five, Six, Seven, Eight, Nine };
         public static int TheSum;

@@ -2,7 +2,7 @@
 using P96.SuDoku;
 
 [TestFixture]
-public class SudokuTests
+public class SudokuTest
 {
     [Test]
     public void SimplePerfTest()
@@ -23,7 +23,7 @@ public class SudokuTests
 
         for (int i = 0; i < 1000; i++)
         {
-            var solution = P96SudokuSolver.SolveSudoku(board);
+            var solution = SudokuSolver.SolveSudoku(board);
             //Assert.IsTrue(SudokuSolver.IsCorrect(solution))
         }
     }

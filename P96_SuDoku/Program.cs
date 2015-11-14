@@ -18,7 +18,7 @@ namespace P96.SuDoku
             TheSum = 0;
             foreach (var board in boards)
             {
-                var solution = P96SudokuSolver.SolveSudoku(board);
+                var solution = SudokuSolver.SolveSudoku(board);
                 TheSum += solution[0, 0] * 100 + solution[0, 1] * 10 + solution[0, 2];
             }
 

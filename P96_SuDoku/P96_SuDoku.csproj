@@ -78,8 +78,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
-    <Compile Include="P96SudokuSolver.cs" />
-    <Compile Include="P96SudokuTest.cs" />
+    <Compile Include="SudokuSolver.cs" />
+    <Compile Include="SudokuTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
