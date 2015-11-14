@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Problem96_SuDoku.Possible;
+using static P96.SuDoku.Possible;
 
-namespace Problem96_SuDoku
+namespace P96.SuDoku
 {
     [Flags]
     public enum Possible
@@ -23,26 +19,10 @@ namespace Problem96_SuDoku
         Nine = 1 << 9,
         All = One | Two | Three | Four | Five | Six | Seven | Eight | Nine
     }
-    public class SudokuSolver
+    public static class P96SudokuSolver
     {
         public static Possible[] posabilities = new[] { One, Two, Three, Four, Five, Six, Seven, Eight, Nine };
         public static int TheSum;
-
-        public static void Main(string[] args)
-        {
-            var boards = ReadBoards(args[0]);
-
-            var time = Stopwatch.StartNew();
-            TheSum = 0;
-            foreach (var board in boards)
-            {
-                var solution = SolveSudoku(board);
-                TheSum += solution[0, 0] * 100 + solution[0, 1] * 10 + solution[0, 2];
-            }
-            Console.WriteLine(time.ElapsedMilliseconds);
-            Console.WriteLine(TheSum);
-            Console.ReadLine();
-        }
 
         public static int[,] SolveSudoku(int[,] board)
         {
@@ -87,7 +67,7 @@ namespace Problem96_SuDoku
                     var cell = root[iRow, iCol];
                     if (!OnlyOnePosiblity(cell))
                     {
-                        var numberOfPosibiltiesInCell = GetFlags(cell).Length;
+                        var numberOfPosibiltiesInCell = GetFlags(cell).Count();
 
                         if (lowestNumber > numberOfPosibiltiesInCell)
                         {
@@ -104,32 +84,24 @@ namespace Problem96_SuDoku
         {
             int row, col;
             CellIndexWithFewestFlags(root, out row, out col);
-            foreach (var number in GetFlags(root[row, col]))
+            foreach (var number in GetFlags(root[row, col]).ToList())
             {
                 var tempBoard = new int[9, 9];
                 var tempRoot = new Possible[9, 9];
                 Array.Copy(board, tempBoard, 9 * 9);
                 Array.Copy(root, tempRoot, 9 * 9);
 
+                root[row, col] &= ~number;
                 tempBoard[row, col] = CellValue(number);
+
                 FillOut(tempBoard, tempRoot);
 
                 var correct = false;
-                var error = HasError(tempRoot, out correct);
-                if (error)
-                {
-                    root[row, col] &= ~number;
-                    continue;
-                }
-                if (correct)
-                {
-                    return tempBoard;
-                }
+                if (HasError(tempRoot, out correct)) continue;
+                if (correct) return tempBoard;
 
                 var solution = DFS(tempBoard, tempRoot);
                 if (solution != null) return solution;
-
-                root[row, col] &= ~number;
             }
             return null; // None of the guesses were correct.
         }
@@ -197,7 +169,7 @@ namespace Problem96_SuDoku
         {
             var possible = root[row, col];
             if (OnlyOnePosiblity(possible)) return possible;
-            foreach (var number in GetFlags(possible))
+            foreach (var number in GetFlags(possible).ToList())
             {
                 var onlyInRow = true;
                 var onlyInCol = true;
@@ -265,50 +237,19 @@ namespace Problem96_SuDoku
             return possible;
         }
 
-        public static List<int[,]> ReadBoards(string fileName)
+        public static IEnumerable<Possible> GetFlags(Possible input)
         {
-            var boards = new List<int[,]>();
-            using (var boardFile = new StreamReader(File.OpenRead(fileName)))
-            {
-                for (int n = 0; n < 50; n++)
-                {
-                    boardFile.ReadLine();
-                    var board = new int[9, 9];
-                    for (int i = 0; i < 9; i++)
-                    {
-                        var line = boardFile.ReadLine();
-                        for (int j = 0; j < 9; j++)
-                        {
-                            board[i, j] = (int)char.GetNumericValue(line[j]);
-                        }
-                    }
-                    boards.Add(board);
-                }
-            }
-            return boards;
+            if (input.HasFlag(One)) yield return One;
+            if (input.HasFlag(Two)) yield return Two;
+            if (input.HasFlag(Three)) yield return Three;
+            if (input.HasFlag(Four)) yield return Four;
+            if (input.HasFlag(Five)) yield return Five;
+            if (input.HasFlag(Six)) yield return Six;
+            if (input.HasFlag(Seven)) yield return Seven;
+            if (input.HasFlag(Eight)) yield return Eight;
+            if (input.HasFlag(Nine)) yield return Nine;
         }
-
-        public static Possible[] GetFlags(Possible input) => (from value in posabilities
-                                                              where input.HasFlag(value)
-                                                              select value).ToArray();
 
         private static int CellValue(Possible pos) => Array.IndexOf(posabilities, pos) + 1;
-        public static string Print(int[,] board)
-        {
-            var sb = new StringBuilder();
-            for (int row = 0; row < 9; row++)
-            {
-                for (int col = 0; col < 9; col++)
-                {
-                    if (col % 3 == 0)
-                        sb.Append(" ");
-                    sb.Append(board[row, col]);
-                }
-                if ((row + 1) % 3 == 0)
-                    sb.AppendLine();
-                sb.AppendLine();
-            }
-            return sb.ToString();
-        }
     }
 }

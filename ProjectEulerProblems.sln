@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Problem96_SuDoku", "ProjectEulerProblems\Problem96_SuDoku\Problem96_SuDoku.csproj", "{191A0A7E-E361-473A-A438-195F0002B4D2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P96_SuDoku", "P96_SuDoku\P96_SuDoku.csproj", "{191A0A7E-E361-473A-A438-195F0002B4D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Problem15_LatticePaths", "Problem15_LatticePaths\Problem15_LatticePaths.csproj", "{1E94B7A8-5C8E-44A7-9B27-5FF0857552D2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P15_LatticePaths", "P15_LatticePaths\P15_LatticePaths.csproj", "{1E94B7A8-5C8E-44A7-9B27-5FF0857552D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
