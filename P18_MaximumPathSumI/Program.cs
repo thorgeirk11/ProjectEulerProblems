@@ -8,179 +8,60 @@ namespace P18_MaximumPathSumI
 {
     class Program
     {
-
-        static string TreeString = @"759564174782183587102004824765190123750334880277730763679965042806167092414126568340807033414872334732371694295371446525439152975114701133287773177839681757917152381714914358502729486366046889536730731669874031046298272309709873933853600423";
-
-        const int Depth = 15;
-
-        static Node Root { get; set; }
-
-        class Node
+        static int[] tree = new[]
         {
-            public Node Left { get; set; }
-            public Node Right { get; set; }
-            public int Cost { get; set; }
-            public int Depth { get; set; }
-            public int Index { get; set; }
-        }
+                    75,
+                95,      64,
+            17,     47,     82,
+        18,     35,     87,     10,
+     20,    04,     82,     47,     65,
 
-        static Dictionary<int, Node> AllNodes = new Dictionary<int, Node>();
-        static Node ParseTree(int depth, int index)
-        {
-            if (AllNodes.ContainsKey(index)) return AllNodes[index];
-            if (TreeString.Length <= index) return null;
-            return AllNodes[index] = new Node
-            {
-                Left = ParseTree(depth + 1, index + depth * 2),
-                Right = ParseTree(depth + 1, index + depth * 2 + 2),
-                Cost = int.Parse(TreeString.Substring(index, 2)),
-                Depth = depth,
-                Index = index
-            };
-        }
+            19, 01, 23, 75, 03, 34,
+            88, 02, 77, 73, 07, 63, 67, 99, 65, 04, 28, 06, 16, 70, 92, 41, 41, 26, 56, 83, 40,
+            80, 70, 33, 41, 48, 72, 33, 47, 32, 37, 16, 94, 29, 53, 71, 44, 65, 25, 43, 91, 52,
+            97, 51, 14, 70, 11, 33, 28, 77, 73, 17, 78, 39, 68, 17, 57, 91, 71, 52, 38, 17, 14,
+            91, 43, 58, 50, 27, 29, 48, 63, 66, 04, 68, 89, 53, 67, 30, 73, 16, 69, 87, 40, 31,
+            04, 62, 98, 27, 23, 09, 70, 98, 73, 93, 38, 53, 60, 04, 23
+        };
 
-        static string Print(Node root, Path path)
-        {
-            if (root == null)
-                return "";
-
-            var sb = new StringBuilder();
-            var curDepth = 0;
-            sb.Append(Enumerable.Repeat(" ", Depth - curDepth).
-                Aggregate("", (s, e) => e + s));
-            foreach (var node in BFS(root))
-            {
-                if (curDepth < node.Depth)
-                {
-                    curDepth++;
-                    sb.AppendLine();
-                    sb.Append(Enumerable.Repeat(" ", Depth - curDepth).
-                        Aggregate("", (s, e) => e + s));
-                }
-
-                if (GetNodes(path).Contains(node))
-                {
-                    sb.Append("-");
-                }
-                sb.Append(node.Cost.ToString().PadLeft(2, '0'));
-                if (GetNodes(path).Contains(node))
-                {
-                    sb.Append("-");
-                }
-                sb.Append(" ");
-            }
-
-            return sb.ToString();
-        }
-        static string Print(Node root)
-        {
-            if (root == null)
-                return "";
-
-            var sb = new StringBuilder();
-            var curDepth = 0;
-            sb.Append(Enumerable.Repeat(" ", Depth - curDepth).
-                Aggregate("", (s, e) => e + s));
-            foreach (var node in BFS(root))
-            {
-                if (curDepth < node.Depth)
-                {
-                    curDepth++;
-                    sb.AppendLine();
-                    sb.Append(Enumerable.Repeat(" ", Depth - curDepth).
-                        Aggregate("", (s, e) => e + s));
-                }
-                sb.Append(node.Cost.ToString().PadLeft(2, '0'));
-                sb.Append(" ");
-            }
-
-            return sb.ToString();
-        }
-        static IEnumerable<Node> GetNodes(Path path)
-        {
-            var bfsOrder = new Queue<Path>();
-            bfsOrder.Enqueue(path);
-            while (bfsOrder.Count > 0)
-            {
-                var curNode = bfsOrder.Dequeue();
-                if (curNode == null) continue;
-                yield return curNode.Node;
-                bfsOrder.Enqueue(curNode.Last);
-            }
-        }
-        static IEnumerable<Node> BFS(Node node)
-        {
-            var bfsOrder = new Queue<Node>();
-            bfsOrder.Enqueue(node);
-            var hasSeen = new HashSet<int>();
-            while (bfsOrder.Count > 0)
-            {
-                var curNode = bfsOrder.Dequeue();
-                if (curNode == null) continue;
-                if (hasSeen.Contains(curNode.Index)) continue;
-                hasSeen.Add(curNode.Index);
-                yield return curNode;
-                bfsOrder.Enqueue(curNode.Left);
-                bfsOrder.Enqueue(curNode.Right);
-            }
-        }
-
-        class Path : IComparable<Path>
-        {
-            public Path Last { get; set; }
-            public Node Node { get; set; }
-            public int TotalCost { get; set; }
-
-            public int CompareTo(Path other) => other.TotalCost.CompareTo(TotalCost);
-            public override bool Equals(object obj) => ((Path)obj).Node.Index == Node.Index;
-            public override int GetHashCode() => Node.Index;
-        }
 
         static void Main(string[] args)
         {
-            Root = ParseTree(1, 0);
-            Console.WriteLine(Print(Root));
+            var max = 0;
+            for (int i = 1; i < tree.Length; i++)
+            {
+                var depth = GetDepth(i);
+                var Left = GetValue(i, depth);
+                var Right = GetValue(i + 1, depth);
+                tree[i] += Math.Max(Left, Right);
+                max = Math.Max(max, tree[i]);
+            }
 
-            var path = NewMethod();
             Console.ReadLine();
         }
 
-        private static Path NewMethod()
+
+        static int GetValue(int index, int depth)
         {
-            var paths = new List<Path>();
-            var seen = new HashSet<int>();
-            var curNode = new Path
+            var nextValueDepth = GetDepth(index - depth);
+            if (depth == nextValueDepth)
+                return 0;
+            if (depth - nextValueDepth == 2)
+                return 0;
+            if (index - depth < 0)
+                return 0;
+            return tree[index - depth];
+        }
+
+        static int GetDepth(int index)
+        {
+            for (int i = 0; true; i++)
             {
-                Node = Root,
-                TotalCost = Root.Cost
-            };
-            paths.Add(curNode);
-            while (curNode.Node.Depth != Depth)
-            {
-                paths.Sort();
-                curNode = paths[0];
-                paths.RemoveAt(0);
-                seen.Add(curNode.Node.Index);
-                AddToPath(paths, seen, curNode, curNode.Node.Left);
-                AddToPath(paths, seen, curNode, curNode.Node.Right);
+                index -= i;
+                if (index < 0)
+                    return i;
             }
-            return curNode;
         }
 
-        private static void AddToPath(List<Path> paths, HashSet<int> seen, Path last, Node node)
-        {
-            if (node == null)
-                return;
-            if (seen.Contains(node.Index))
-                return;
-
-            var newPathNode = new Path
-            {
-                Last = last,
-                Node = node,
-                TotalCost = last.TotalCost + node.Cost
-            };
-            paths.Add(newPathNode);
-        }
     }
 }
