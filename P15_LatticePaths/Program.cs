@@ -31,8 +31,13 @@
             // there are exactly 6 routes to the bottom right corner.
             //How many such routes are there through a 20×20 grid ?
             var sw = Stopwatch.StartNew();
-            Console.WriteLine(PathCount(new Cell(0, 0)));
+            for (int i = 0; i < 10000; i++)
+            {
+                CachedCells.Clear();
+                PathCount(new Cell(0, 0));
+            }
             Console.WriteLine(sw.ElapsedMilliseconds);
+            Console.Read();
         }
 
         static Dictionary<Cell, long> CachedCells = new Dictionary<Cell, long>();

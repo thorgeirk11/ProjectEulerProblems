@@ -18,18 +18,18 @@ long long PathCount(tuple<int, int> cell)
 	return CachedCells[cell] = PathCount(make_tuple(row, col + 1)) + PathCount(make_tuple(row + 1, col));
 }
 
-static double diffclock(clock_t clock1, clock_t clock2)
-{
-	double diffticks = clock1 - clock2;
-	double diffms = (diffticks) / (CLOCKS_PER_SEC / 1000);
-	return diffms;
-}
-
 int main()
 {
 	clock_t start = clock();
-	cout << PathCount(make_tuple(0, 0)) << endl;
-	printf("Time taken in millisecs: %f", diffclock(start, clock()));
+	for (size_t i = 0; i < 10000; i++)
+	{
+		CachedCells.clear();
+		PathCount(make_tuple(0, 0));
+	}
+	clock_t end = clock();
+	cout << "Time taken in millisecs: " << end - start;
+	cin.get();
+	cin.get();
 	return 0;
 }
 
