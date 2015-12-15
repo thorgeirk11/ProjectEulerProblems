@@ -23,8 +23,11 @@ namespace P18_MaximumPathSumI
         }
         static void Main(string[] args)
         {
-            var max = GetMax(P67_Data.Tree);
-            Console.WriteLine(max);
+            //var max1 = GetMax(P67_Data.Tree);
+            var max2 = GetMax(P67_Data.Tree);
+
+            //Console.WriteLine(max1);
+            Console.WriteLine(max2);
             Console.ReadLine();
         }
     }

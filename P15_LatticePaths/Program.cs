@@ -1,6 +1,4 @@
-﻿namespace Problem15_LatticePaths
-{
-    using System;
+﻿    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
 
@@ -22,8 +20,6 @@
 
             public override string ToString() => $"({Row},{Col})";
         }
-
-        const int GridSize = 20;
 
         static void Main(string[] args)
         {
