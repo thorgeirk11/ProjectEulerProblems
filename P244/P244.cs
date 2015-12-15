@@ -11,7 +11,6 @@ namespace P244
         static void Main(string[] args)
         {
             var frontier = new List<Path>();
-            var visited = new HashSet<Board> { Root };
             var shortest = new List<Path>();
 
             var shortestSol = int.MaxValue;
@@ -20,32 +19,37 @@ namespace P244
             {
                 Heuristics = Heuristics(Root)
             };
-            while (true)
+            do
             {
-                if (cur.Heuristics > 0)
+                if (cur.Heuristics + cur.Depth <= shortestSol)
                 {
                     foreach (var board in AllPaths(cur.Board))
                     {
-                        if (visited.Contains(board)) continue;
+                        if (cur.Boards.Contains(board))
+                            continue;
                         var nextPath = cur.Next(board);
                         nextPath.Heuristics = Heuristics(board);
                         frontier.Add(nextPath);
                     }
                 }
+                else
+                {
+
+                }
                 frontier.Sort((a, b) => a.Heuristics.CompareTo(b.Heuristics));
 
                 cur = frontier.First();
-                frontier.Remove(cur);
-                visited.Add(cur.Board);
+                frontier.RemoveAt(0);
                 if (cur.Heuristics == 0)
                 {
-                    if (shortestSol == int.MaxValue)
+                    if (shortestSol > cur.Depth)
+                    {
                         shortestSol = cur.Depth;
-
-                    if (cur.Depth > shortestSol) break;
+                        shortest.RemoveAll(i => i.Depth > shortestSol);
+                    }
                     shortest.Add(cur);
                 }
-            }
+            } while (frontier.Count > 0);
 
             Console.WriteLine(cur);
             Console.WriteLine(Heuristics(cur.Board));
@@ -115,6 +119,22 @@ namespace P244
 
         public int Depth => (Previus?.Depth ?? 0) + 1;
 
+        public IEnumerable<Board> Boards
+        {
+            get
+            {
+                yield return Board;
+
+                if (Previus != null)
+                {
+                    foreach (var prevBoards in Previus.Boards)
+                    {
+                        yield return prevBoards;
+                    }
+                }
+            }
+        }
+
         public Path(Board cur) { Board = cur; }
         private Path(Path prev, Board cur)
         {
@@ -123,9 +143,10 @@ namespace P244
         }
         public Path Next(Board board) => new Path(this, board);
 
-        public bool Equals(Path other) => Board.Equals(other.Board);
+        public bool Equals(Path other) =>
+            Board.Equals(other.Board) && (Previus?.Equals(other.Previus) ?? Previus == null && other.Previus == null);
         public override bool Equals(object other) => Equals(other as Path);
-        public override int GetHashCode() => Board.GetHashCode();
+        public override int GetHashCode() => Board.GetHashCode() ^ (Previus?.GetHashCode() ?? 0);
         public override string ToString() => Board.ToString();
     }
 
@@ -142,11 +163,10 @@ namespace P244
         private readonly int _tiles;
         public int X { get; }
         public int Y { get; }
-        public Direction ReachDir { get; }
+        //public Direction ReachDir { get; }
 
         public Board(bool[,] tiles, int x, int y)
         {
-            ReachDir = Direction.Up;
             _tiles = 0;
             for (int row = 0; row < 4; row++)
             {
@@ -161,9 +181,8 @@ namespace P244
             X = x;
             Y = y;
         }
-        private Board(int tiles, Direction reachDirection, int x, int y)
+        private Board(int tiles, int x, int y)
         {
-            ReachDir = reachDirection;
             _tiles = tiles;
             X = x;
             Y = y;
@@ -171,13 +190,13 @@ namespace P244
 
         public bool CanDown => X > 0;
         public bool CanLeft => Y > 0;
-        public bool CanRight => Y < 4;
-        public bool CanUp => X < 4;
+        public bool CanRight => Y < 3;
+        public bool CanUp => X < 3;
 
-        public Board Down => NewState(X - 1, Y, Direction.Down);
-        public Board Left => NewState(X, Y - 1, Direction.Left);
-        public Board Right => NewState(X, Y + 1, Direction.Right);
-        public Board Up => NewState(X + 1, Y, Direction.Up);
+        public Board Down => NewState(X - 1, Y);
+        public Board Left => NewState(X, Y - 1);
+        public Board Right => NewState(X, Y + 1);
+        public Board Up => NewState(X + 1, Y);
 
         public bool this[int row, int col] => ((_tiles >> row * 4 + col) & 1) == 1;
 
@@ -196,8 +215,8 @@ namespace P244
             return sb.ToString();
         }
 
-        private Board NewState(int x, int y, Direction reachDir) => ((_tiles >> x * 4 + y) & 1) == 1 ?
-            new Board(_tiles | (1 << X * 4 + Y), reachDir, x, y) :
-            new Board(_tiles & ~(1 << X * 4 + Y), reachDir, x, y);
+        private Board NewState(int x, int y) => ((_tiles >> x * 4 + y) & 1) == 1 ?
+            new Board(_tiles | (1 << X * 4 + Y), x, y) :
+            new Board(_tiles & ~(1 << X * 4 + Y), x, y);
     }
 }
